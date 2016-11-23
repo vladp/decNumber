@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 
-                            BUILD INSTRUCTIONS
+                             PREREQUSITES
 
 This package is built using CMake.
 
@@ -22,12 +22,31 @@ CMake can be downloaded and installed from:
 
 -------------------------------------------------------------------------------
 
-                               DECNUMBER
+                                CLANG
+
+To build on Linux platforms using clang instead of gcc, simply export the
+CC and CXX flags before invoking CMake:
+
+
+    $ export CC=clang
+    $ export CXX=clang++
+    $ cmake srcdir
+
+
+If clang/clang++ is not in your $PATH, then you will need to specify its
+full path in the CC/CXX export commands.
+
+-------------------------------------------------------------------------------
+
+                          BUILDING DECNUMBER
+
+                      (manual Command Line method)
+
 
 The decNumber project is hosted on GitHub at the following URL:
 
 
-    https://github.com/hercules-390/decNumber-icu-368.git
+    https://github.com/hercules-390/decNumber-icu-368
 
 
 You can either clone the git repository (recommended) or download the source
@@ -65,7 +84,7 @@ into the specified installation directory, simply use the commands:
 
     > mkdir <build-dir>
     > cd <build-dir>
-    > vstools [32|64]
+    > srcdir\vstools [32|64]
     > cmake -G "NMake Makefiles" srcdir
     > nmake
     > nmake install
@@ -77,10 +96,10 @@ into the specified installation directory, simply use the commands:
     $ cd <build-dir>
     $ cmake srcdir
     $ make
-    # sudo make install
+    # (sudo) make install
 
 
-Where "srcdir" is the package's source (repository) directory, where the
+Where "srcdir" is the package's source (repository) directory where the
 "CMakeLists.txt" file exists.
 
 The "vstools.cmd" batch file (Windows only) initializes the proper Microsoft
@@ -105,46 +124,78 @@ Surround "INSTALL_PREFIX=dirpath" with double quotes if it contains blanks.
 
 -------------------------------------------------------------------------------
 
-                                CLANG
+                           BUILDING DECNUMBER
 
-To build on Linux platforms using clang instead of gcc, simply export the
-CC and CXX flags before invoking CMake:
-
-
-    $ export CC=clang
-    $ export CXX=clang++
-    $ cmake srcdir
+                     (automated Command Line method)
 
 
-If clang/clang++ is not in your $PATH, then you will need to specify its
-full path in the CC/CXX export commands.
+To make things REALLY SIMPLE on both Windows and Linux you can instead use
+the provided "build" script ('build.cmd' on Windows, just 'build' on Linux)
+which performs the complete build for you by automatically creating all of
+the needed build directories and then invoking all needed commands in turn
+to build and install the package for the given architecture/configuration.
+
+To use the automated build method all you need to do is first create a WORK
+directory *outside* of (but at the same level as) the package's source code
+(i.e. repository) directory, with the name of the package (e.g. decNumber).
+
+Then, from within that WORK directory, simply invoke the package's "build"
+script:
+
+
+  ..\decNumber-icu-368\build --pkgname . --all --install ..\hyperion\decNumber
+
+
+This will build the package (within your WORK directory) and automatically
+install the results into the given hercules external package subdirectory.
+Then simply build hercules like normal.
+
+Enter "build --help" and/or refer to the appropriate Hercules documentation
+for more information regarding building Hercules external packages.
 
 -------------------------------------------------------------------------------
 
-                              BUILD.CMD
+                           BUILDING DECNUMBER
 
-On Windows, to make things REALLY SIMPLE, you can instead use the provided
-"build.cmd" script which performs the complete build for you automatically
-by creating the build directory and automatically invoking each command:
+                       (Visual Studio GUI method)
 
 
-    build  -i srcdir
+To make things EVEN SIMPLER on Windows (but with one minor snag), simply
+open the provided Visual Studio solution (.sln) file and then click the
+"Rebuild All" toolbar button.
 
+Visual Studio will automatically invoke the appropriate "build.cmd" for
+you for whichever platform and configuration that you've selected in its
+Build toolbar's list boxes.
 
-Enter "build /?" or "build --help" for more information.
+Like the previous manual Command Line method, this method presumes you've
+created an appropriately named WORK directory at the same level with the
+same name as the Project ("decNumber" in this case).
+
+The only "snag" (gotcha) is the package gets installed into a subdirectory
+within the WORK directory and not directly into your desired Hercules
+directory.  As a result, once you've built all of your architecture and
+configuration combinations, you will have to manually copy the results to
+your Hercules's package subdirectory.  This is because Visual Studio does
+not know ahead of time what Hercules directory you want to install into
+(so it instead it does the install to your WORK directory).
+
+If you are experienced with Visual Studio however, you can manually edit
+the "Build Command Line", "Rebuild All Command Line" and "Clean Command
+Line" project properties with your desired --install directory so that
+a Solution Build will then automatically install the package into your
+desired Hercules subdirectory, eliminating the need for the manual copy.
 
 -------------------------------------------------------------------------------
 
-                                BUILD
+                          NON-X86 ARCHITECTURES
 
-On Linux, to make things REALLY SIMPLE, you can instead use the provided
-"build" bash script which performs the complete build for you automatically
-by creating the build directory and automatically invoking each command:
+To build a non-x86 architectural version of an external package simply build
+it like normal but install it within its own unique architectural directory
+within Hercules's main external package subdirectory.  That is to say, you
+should specify e.g. "hyperion/decNumber/sparc" as your --install directory.
 
-
-    build  -i srcdir
-
-
-Enter "build -h" or "build --help" for more information.
+Hercules currently understands the following foreign architectures: arm, mips,
+ppc, sparc, xscale and unknown.
 
 -------------------------------------------------------------------------------
