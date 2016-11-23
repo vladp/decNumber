@@ -6,8 +6,8 @@
   setlocal
   pushd .
 
-  set "_versnum=1.0"
-  set "_versdate=June 26, 2016"
+  set "_versnum=2.0"
+  set "_versdate=November, 2016"
 
   goto :init
 
@@ -19,18 +19,19 @@
   echo.
   echo     NAME
   echo.
-  echo         %nx0%   --   Builds the external Hercules package
+  echo         %nx0%   --   Builds and installs a Hercules external package
   echo.
   echo     SYNOPSIS
   echo.
-  echo         %nx0%   [ { -i   ^| --pkgdir    }    pkgdir     ]             \
-  echo                     [ { -n   ^| --pkgname   }   pkgname     ]             \
-  echo                     [ { -o   ^| --install   } [ instdir  ]  ]             \
-  echo                       [ -u   ^| --uninstall ]                             \
-  echo                     [ { -a   ^| --arch      }  64      ^| 32    ^| BOTH  ]  \
-  echo                     [ { -c   ^| --config    }  Release ^| Debug ^| BOTH  ]  \
-  echo                       [ -all ^| --all ]                                   \
-  echo                       [ -r   ^| --rebuild ]
+  echo         %nx0%   [ { -d   ^| --pkgdir    }  [ pkgdir  ]                 ]
+  echo                     [ { -n   ^| --pkgname   }  [ pkgname ]                 ]
+  echo                     [ { -a   ^| --arch      }  [ 64       ^| 32    ^| BOTH ] ]
+  echo                     [ { -c   ^| --config    }  [ Release  ^| Debug ^| BOTH ] ]
+  echo                     [ { -all ^| --all       }                              ]
+  echo                     [ { -r   ^| --rebuild   }                              ]
+  echo                     [ { -i   ^| --install   }  [ instdir  ]                ]
+  echo                     [ { -u   ^| --uninstall }  [ uinstdir ]                ]
+  echo                     [ { -f   ^| --force     }
   echo.
   echo     ARGUMENTS
   echo.
@@ -47,24 +48,47 @@
   echo                    be specified to derive from the last component of
   echo                    the current directory instead.
   echo.
+  echo         arch       The build architecture. Use '32' to build an x86
+  echo                    32-bit version of the package. Use '64' to build
+  echo                    an x64 64-bit version of the package. Use 'BOTH'
+  echo                    to build both architectures.  The default is 64.
+  echo.
+  echo         config     The build configuration. Specify 'Debug' to build
+  echo                    an unoptimized debug version of the product.  Use
+  echo                    Release to build an optimized version ^(which also
+  echo                    has debugging symbols).  The default is Release.
+  echo.
   echo         install    Install the package into the specified directory.
-  echo                    If not specified the package won't be installed.
+  echo                    If not specified the package will not be installed.
   echo.
   echo         instdir    The package installation directory.  If specified
   echo                    the given directory MUST exist.  If not specified
-  echo                    the package's CMake default is used instead.
+  echo                    the directory specified in a previous run is used
+  echo                    if such is possible.  Otherwise the package CMake
+  echo                    default installation directory is used instead.
   echo.
-  echo         uninstall  Uninstalls the previously installed package.
+  echo         uninstall  Uninstall the package from the specified directory.
+  echo.
+  echo         uinstdir   The directory where the package was installed.  If
+  echo                    specified without the force option, the value MUST
+  echo                    match the install directory used in a previous run.
+  echo                    If not specified, then the install directory from
+  echo                    the previous run is retrieved from the CMake cache
+  echo                    and used instead.  If the directory isn't found in
+  echo                    CMake's cache the package default install directory
+  echo                    is used instead.  The directory MUST exist.
   echo.
   echo     OPTIONS
   echo.
-  echo         arch       The build architecture.   The default is 64.
-  echo.
-  echo         config     The build configuration.  The default is Release.
-  echo.
   echo         all        Shorthand for "--arch BOTH --config BOTH".
   echo.
-  echo         rebuild    Forces a complete reconfigure and rebuild.
+  echo         rebuild    Forces a complete CMake reconfigure and rebuild.
+  echo.
+  echo         force      Overrides CMake's cached install directory used in
+  echo                    a previous run and forces the uninstall to use the
+  echo                    specified directory instead.  It effectively forces
+  echo                    a complete CMake reconfigure just like the rebuild
+  echo                    option does but is used exclusively for uninstalls.
   echo.
   echo     NOTES
   echo.
@@ -133,15 +157,16 @@
   set "install="
   set "instdir="
   set "uninstall="
+  set "uinstdir="
   set "arch="
   set "config="
   set "rebuild="
+  set "force="
   set "bldall="
 
   @REM  Default values...
 
   set "def_pkgdir=%dp0%"
-  set "def_instdir=dummy-non-empty-value"
   set "def_arch=64"
   set "def_config=Release"
 
@@ -154,16 +179,14 @@
 
   call :fullpath "%cmake%"
   if not defined # (
-    echo ERROR: %cmake% not found. 1>&2
+    call :errmsg %cmake% not found.
     set "cmake="
-    call :setrc1
   )
 
   call :fullpath "%vstools%"  vstools
   if not defined # (
-    echo ERROR: %vstools% not found. 1>&2
+    call :errmsg %vstools% not found.
     set "vstools="
-    call :setrc1
   )
 
   %return%
@@ -181,6 +204,21 @@
     if not "%~2" == "" (
       set "%~2=%#%"
     )
+  )
+  %return%
+
+::-----------------------------------------------------------------------------
+::                              isfile
+::-----------------------------------------------------------------------------
+:isfile
+
+  if not exist "%~1" (
+    set "isfile="
+    %return%
+  )
+  set "isfile=%~a1"
+  if defined isfile (
+    if /i "%isfile:~0,1%" == "d" set "isfile="
   )
   %return%
 
@@ -226,6 +264,86 @@
   %return%
 
 ::-----------------------------------------------------------------------------
+::                            normalize_dir
+::-----------------------------------------------------------------------------
+:normalize_dir
+
+  if "%~2" == "" %return%
+
+  setlocal
+
+  set "var_name=%~1"
+  set "var_value=%~2"
+
+  ::  Normalize path separator
+  ::  Remove trailing separator
+
+  set "norm_val=%var_value:/=\%"
+
+  if "%norm_val:~-1%" == "\" (
+    set "norm_val=%norm_val:~0,-1%"
+  )
+
+  endlocal && set "%var_name%=%norm_val%"
+
+  %return%
+
+::-----------------------------------------------------------------------------
+::                            is_valid_dir
+::-----------------------------------------------------------------------------
+:is_valid_dir
+
+  @REM  Return value 'is_valid_dir' defined if valid, otherwise undefined.
+
+  @REM  Passed variable will ALWAYS be updated (normalized) REGARDLESS of
+  @REM  whether it is determined to be valid or not.
+
+  @REM  Use quiet option to preserve rc/maxrc value if only interested in
+  @REM  the 'is_valid_dir' return value.  Otherwise an error message will
+  @REM  be issued and 'rc' & 'maxrc' will be updated if directory invalid.
+
+  setlocal
+
+  set "is_valid_dir=1"
+
+  set "var_name=%~1"
+  set "var_value=%~2"
+  set "quiet=%~3"
+
+  call :normalize_dir  norm_val  "%var_value%"
+
+  call :fullpath "%norm_val%"
+
+  if not defined # (
+    set "is_valid_dir="
+    if not defined quiet (
+      call :errmsg %var_name% "%var_value%" not found.
+    )
+    goto :is_valid_dir_ret
+  )
+
+  set "norm_val=%#%"
+
+  call :isdir "%norm_val%"
+
+  if not defined isdir (
+    set "is_valid_dir="
+    if not defined quiet (
+      call :errmsg %var_name% "%var_value%" is not a directory.
+    )
+  )
+
+:is_valid_dir_ret
+
+  if defined quiet (
+    endlocal && set "is_valid_dir=%is_valid_dir%" && set "%var_name%=%norm_val%"
+  ) else (
+    endlocal && set "is_valid_dir=%is_valid_dir%" && set "%var_name%=%norm_val%" && set "rc=%rc%" && set "maxrc=%maxrc%"
+  )
+
+  %return%
+
+::-----------------------------------------------------------------------------
 ::                             isalphanum
 ::-----------------------------------------------------------------------------
 :isalphanum
@@ -257,17 +375,26 @@
 ::-----------------------------------------------------------------------------
 :get_cache_value
 
+  setlocal
+
   set "_cachefile=%~1"
   set "_varname=%~2"
-  set "cache_value="
+  set "cache_value="           && @REM (the value we will be returning_
+
+  if not exist "%_cachefile%" (
+    goto :get_cache_value_ret
+  )
 
   for /f "tokens=*" %%a in (%_cachefile%) do (
     call :cache_stmt "%%a"
     if defined cache_value (
-      %return%
+      goto :get_cache_value_ret
     )
   )
 
+:get_cache_value_ret
+
+  endlocal && set "cache_value=%cache_value%"
   %return%
 
 :cache_stmt
@@ -344,7 +471,7 @@
   if /i "%~1" == "--help"  %help%
 
   call :load_tools
-  if not "%rc%" == "0" %exit%
+  if %rc% NEQ 0 %exit%
 
 :parse_options_loop
 
@@ -371,13 +498,14 @@
 
   if /i "%optname%" == "?"   goto :parse_help_opt
   if /i "%optname%" == "h"   goto :parse_help_opt
-  if /i "%optname%" == "i"   goto :parse_pkgdir_opt
+  if /i "%optname%" == "d"   goto :parse_pkgdir_opt
   if /i "%optname%" == "n"   goto :parse_pkgname_opt
-  if /i "%optname%" == "o"   goto :parse_install_opt
+  if /i "%optname%" == "i"   goto :parse_install_opt
   if /i "%optname%" == "u"   goto :parse_uninstall_opt
   if /i "%optname%" == "a"   goto :parse_arch_opt
   if /i "%optname%" == "c"   goto :parse_config_opt
   if /i "%optname%" == "r"   goto :parse_rebuild_opt
+  if /i "%optname%" == "f"   goto :parse_force_opt
   if /i "%optname%" == "all" goto :parse_all_opt
 
   @REM  Determine if "--xxxx" long option
@@ -399,6 +527,7 @@
   if /i "%optname%" == "arch"      goto :parse_arch_opt
   if /i "%optname%" == "config"    goto :parse_config_opt
   if /i "%optname%" == "rebuild"   goto :parse_rebuild_opt
+  if /i "%optname%" == "force"     goto :parse_force_opt
   if /i "%optname%" == "all"       goto :parse_all_opt
   if /i "%optname%" == "version"   goto :parse_version_opt
 
@@ -446,7 +575,15 @@
 
   if not defined optval goto :parse_options_loop
   set "instdir=%optval%"
-  set "def_instdir="
+  shift /1
+  goto :parse_options_loop
+
+:parse_uninstall_opt
+
+  set "uninstall=1"
+
+  if not defined optval goto :parse_options_loop
+  set "uinstdir=%optval%"
   shift /1
   goto :parse_options_loop
 
@@ -459,14 +596,14 @@
   %help%
   goto :parse_options_loop
 
-:parse_uninstall_opt
-
-  set "uninstall=1"
-  goto :parse_options_loop
-
 :parse_rebuild_opt
 
   set "rebuild=1"
+  goto :parse_options_loop
+
+:parse_force_opt
+
+  set "force=1"
   goto :parse_options_loop
 
 :parse_all_opt
@@ -486,6 +623,8 @@
 
 :parse_positional_arg
 
+  ::  We do not have any positional arguments
+
   goto :parse_unknown_arg
 
   @REM ------------------------------------
@@ -494,20 +633,17 @@
 
 :parse_unknown_arg
 
-  echo ERROR: Unrecognized/extraneous argument '%cmdline_arg%'. 1>&2
-  call :setrc1
+  call :errmsg Unrecognized/extraneous argument '%cmdline_arg%'.
   goto :parse_options_loop
 
 :parse_unknown_opt
 
-  echo ERROR: Unknown/unsupported option '%cmdline_arg%'. 1>&2
-  call :setrc1
+  call :errmsg Unknown/unsupported option '%cmdline_arg%'.
   goto :parse_options_loop
 
 :parse_missing_optarg
 
-  echo ERROR: Option '%cmdline_arg%' is missing its required argument. 1>&2
-  call :setrc1
+  call :errmsg Option '%cmdline_arg%' is missing its required argument.
   goto :parse_options_loop
 
 :options_loop_end
@@ -519,13 +655,15 @@
   %TRACE% install   = "%install%"
   %TRACE% instdir   = "%instdir%"
   %TRACE% uninstall = "%uninstall%"
+  %TRACE% uinstdir  = "%uinstdir%"
   %TRACE% arch      = "%arch%"
   %TRACE% config    = "%config%"
   %TRACE% rebuild   = "%rebuild%"
+  %TRACE% force     = "%force%"
   %TRACE% bldall    = "%bldall%"
   %TRACE%.
 
-  if not "%rc%" == "0" %exit%
+  if %rc% NEQ 0 %exit%
   goto :validate_args
 
 ::-----------------------------------------------------------------------------
@@ -533,51 +671,30 @@
 ::-----------------------------------------------------------------------------
 :validate_args
 
-  ::  Use default pkgdir if pkgdir is not defined yet
-
   if not defined pkgdir (
     set "pkgdir=%def_pkgdir%"
   )
 
-  ::  Validate pkgdir
+  call :is_valid_dir  pkgdir  "%pkgdir%"
 
-  if not exist  "%pkgdir%" (
-    echo ERROR: pkgdir "%pkgdir%" not found. 1>&2
-    call :setrc1
-    goto :validate_pkgdir_done
+  if %rc% NEQ 0 (
+    @REM error message already issued
+    goto :validate_pkgname
   )
-
-  call :isdir "%pkgdir%"
-
-  if not defined isdir (
-    echo ERROR: pkgdir "%pkgdir%" is not a directory. 1>&2
-    call :setrc1
-    goto :validate_pkgdir_done
-  )
-
-  call :fullpath "%pkgdir%"
-
-  if not defined # (
-    echo ERROR: pkgdir "%pkgdir%" not found. 1>&2
-    call :setrc1
-    goto :validate_pkgdir_done
-  )
-
-  set "pkgdir=%#%"
 
   pushd "%pkgdir%"
   call :fullpath "CMakeLists.txt"
   popd
 
   if not defined # (
-    echo ERROR: File "CMakeLists.txt" not found in pkgdir. 1>&2
-    call :setrc1
-    goto :validate_pkgdir_done
+    call :errmsg File "CMakeLists.txt" not found in pkgdir.
+    goto :validate_pkgname
   )
 
-:validate_pkgdir_done
+  goto :validate_pkgname
 
-  ::  Validate pkgname
+::-----------------------------------------------------------------------------
+:validate_pkgname
 
   if "%pkgname%" == "." (
     goto :validate_dot_pkgname
@@ -591,7 +708,7 @@
 
   call :dirname "%pkgdir%"
   set "pkgname=%dirname%"
-  goto :validate_derive_pkgname
+  goto :validate_derived_pkgname
 
 :validate_dot_pkgname
 
@@ -599,9 +716,9 @@
 
   call :dirname "%cd%"
   set "pkgname=%dirname%"
-  goto :validate_derive_pkgname
+  goto :validate_derived_pkgname
 
-:validate_derive_pkgname
+:validate_derived_pkgname
 
   set "_pkgname=%pkgname%"
   set "pkgname="
@@ -610,7 +727,7 @@
   ::  by skipping all non-alphanumeric characters
   ::  and ensuring the first character is a letter.
 
-:validate_derive_pkgname_loop
+:validate_derived_pkgname_loop
 
   if not defined _pkgname (
     @REM We're done. Go validate our results.
@@ -623,12 +740,11 @@
   set "_pkgname=%_pkgname:~1%"
   
   for /f "delims=%numbers%%letters%" %%i in ("%@%/") do (
-    if "%%i" == "/" call :validate_derive_pkgname_append
-    goto :validate_derive_pkgname_loop
+    if "%%i" == "/" call :validate_derived_pkgname_append_sub
+    goto :validate_derived_pkgname_loop
   )
 
-:validate_derive_pkgname_append
-
+:validate_derived_pkgname_append_sub
   set "pkgname=%pkgname%%@%"
   %return%
 
@@ -636,63 +752,32 @@
 
   call :isalphanum "%pkgname%"
   if not defined isalphanum (
-    echo ERROR: Invalid pkgname "%pkgname%". 1>&2
-    call :setrc1
-    goto :validate_pkgname_done
+    call :errmsg Invalid pkgname "%pkgname%".
+    goto :validate_instdir
   )
 
-  goto :validate_pkgname_done
+  goto :validate_instdir
 
-:validate_pkgname_done
+::-----------------------------------------------------------------------------
+:validate_instdir
 
-  ::  Validate instdir
-
-  if not defined instdir (
-
-    @REM  They didn't specify an install directory.
-    @REM  Leave 'instdir' undefined so cmake uses a
-    @REM  default value.  Ensure 'def_instdir' is
-    @REM  NOT empty to indicate that we're using a
-    @REM  default value.
-
-    set "instdir="
-    set "def_instdir=dummy-non-empty-value"
-    goto :validate_instdir_done
+  if defined instdir (
+    call :is_valid_dir  instdir  "%instdir%"
   )
 
-  ::  Undefine 'def_instdir' so we know
-  ::  we're using their specific value
-  ::  and not the default.
+  goto :validate_uinstdir
 
-  set "def_instdir="  && @REM (default value NOT being used)
+::-----------------------------------------------------------------------------
+:validate_uinstdir
 
-  :: (change all "/" to "\")
-  set "instdir=%instdir:/=\%"
-
-  :: (remove any trailing "\")
-  if "%instdir:~-1%" == "\" (
-    set "instdir=%instdir:~0,-1%"
+  if defined uinstdir (
+    call :is_valid_dir  uinstdir  "%uinstdir%"
   )
 
-  call :fullpath "%instdir%"
+  goto :validate_build
 
-  if not defined # (
-    echo ERROR: instdir "%instdir%" not found. 1>&2
-    call :setrc1
-    goto :validate_instdir_done
-  )
-
-  set "instdir=%#%"
-
-  call :isdir "%instdir%"
-
-  if not defined isdir (
-    echo ERROR: instdir "%instdir%" is not a directory. 1>&2
-    call :setrc1
-    goto :validate_instdir_done
-  )
-
-:validate_instdir_done
+::-----------------------------------------------------------------------------
+:validate_build
 
   ::  Ignore specified arch and config values if bldall was specified
 
@@ -720,16 +805,14 @@
     if /i not "%arch%" == "32" (
       if /i not "%arch%" == "64" (
         if /i not "%arch%" == "BOTH" (
-          echo ERROR: Invalid arch "%arch%" 1>&2
-          call :setrc1
+          call :errmsg Invalid arch "%arch%"
         )
       )
     )
     if /i not "%config%" == "Debug" (
       if /i not "%config%" == "Release" (
         if /i not "%config%" == "BOTH" (
-          echo ERROR: Invalid config "%config%" 1>&2
-          call :setrc1
+          call :errmsg Invalid config "%config%"
         )
       )
     )
@@ -745,8 +828,37 @@
     )
   )
 
+  goto :validate_arg_sanity
+
+::-----------------------------------------------------------------------------
+:validate_arg_sanity
+
+  ::  Check for conflicting options, etc...
+
+  if defined uninstall (
+    if defined install (
+      call :errmsg Cannot specify both install and uninstall.
+      call :errmsg Choose one or the other but not both.
+    )
+  )
+
+  if defined install (
+    if defined force (
+      call :errmsg Option --force is only for uninstalls.
+      call :errmsg For installs specify --rebuild instead.
+    )
+  )
+
+  if defined uninstall (
+    if defined rebuild (
+      call :errmsg Option --rebuild is only for installs.
+      call :errmsg For uninstalls specify --force instead.
+    )
+  )
+
   goto :validate_args_done
 
+::-----------------------------------------------------------------------------
 :validate_args_done
 
   %TRACE% Debug: values after validation:
@@ -756,14 +868,169 @@
   %TRACE% install   = "%install%"
   %TRACE% instdir   = "%instdir%"
   %TRACE% uninstall = "%uninstall%"
+  %TRACE% uinstdir  = "%uinstdir%"
   %TRACE% arch      = "%arch%"
   %TRACE% config    = "%config%"
   %TRACE% rebuild   = "%rebuild%"
+  %TRACE% force     = "%force%"
   %TRACE% bldall    = "%bldall%"
   %TRACE%.
 
-  if not "%rc%" == "0" %exit%
+  if %rc% NEQ 0 %exit%
   goto :BEGIN
+
+::-----------------------------------------------------------------------------
+::                          get_prev_instdir
+::-----------------------------------------------------------------------------
+:get_prev_instdir
+
+  set "prev_instdir="
+
+  if not exist "%cachefile%" %return%
+
+  call :get_cache_value "%cachefile%" "CMAKE_INSTALL_PREFIX"
+
+  if defined cache_value (
+    call :normalize_dir  prev_instdir  "%cache_value%"
+  )
+
+  %return%
+
+::-----------------------------------------------------------------------------
+::                         is_configure_needed
+::-----------------------------------------------------------------------------
+:is_configure_needed
+
+  set "configure_needed="
+
+  @REM  Initialization...
+
+  set "blddir=%pkgname%%arch%.%config%"
+  set "cachefile=%blddir%\CMakeCache.txt"
+  call :get_prev_instdir
+
+  @REM  configure is needed ONLY if:
+  @REM
+  @REM    *  rebuild specified, OR
+  @REM    *  blddir does NOT exist yet, OR
+  @REM    *  blddir does NOT contain makefile, OR
+  @REM    *  uninstall --force specified
+
+  if defined rebuild (
+    goto :configure_is_needed
+  )
+
+  call :isdir "%blddir%"
+
+  if not defined isdir (
+    goto :configure_is_needed
+  )
+
+  call :isfile "%blddir%\Makefile"
+
+  if not defined isfile (
+    goto :configure_is_needed
+  )
+
+  if defined uninstall (
+    if defined force (
+      goto :configure_is_needed
+    )
+  )
+
+  %return%
+
+:configure_is_needed
+
+  set "configure_needed=1"
+
+  if     exist "%blddir%" rmdir /s /q "%blddir%"
+  if not exist "%blddir%" mkdir       "%blddir%"
+
+  %return%
+
+::-----------------------------------------------------------------------------
+::                            is_make_needed
+::-----------------------------------------------------------------------------
+:is_make_needed
+
+  set "make_needed=1"       && @REM safest default is to always do a make
+
+  @REM  a make is NOT needed ONLY if:
+  @REM
+  @REM    *  configure is not needed, AND
+  @REM    *  uninstalling, AND
+  @REM    *  blddir DOES contain "install_manifest.txt"
+  @REM
+  @REM  Otherwise a make IS needed.
+
+  if not defined configure_needed (
+    if defined uninstall (
+      call :isfile "%blddir%\install_manifest.txt"
+      if defined isfile (
+        set "make_needed="  && @REM make NOT needed since we're uninstalling
+      )
+    )
+  )
+
+  %return%
+
+::-----------------------------------------------------------------------------
+::                          is_install_needed
+::-----------------------------------------------------------------------------
+:is_install_needed
+
+  set "install_needed="
+
+  @REM  install is needed ONLY if:
+  @REM
+  @REM    *  install specified, OR
+  @REM    *  uninstall specified, AND
+  @REM    *  blddir does NOT contain "install_manifest.txt"
+
+  if defined install (
+    goto :install_is_needed
+  )
+
+  if not defined uninstall (
+    :: Neither install nor uninstall was specified
+    %return%
+  )
+
+  :: Uninstall was specified
+
+  call :isfile "%blddir%\install_manifest.txt"
+
+  if not defined isfile (
+    goto :install_is_needed
+  )
+
+  :: Uninstalling and install manifest DOES exist.
+  :: Skip the install step, and do ONLY uninstall.
+
+  %return%
+
+:install_is_needed
+
+  set "install_needed=1"
+  %return%
+
+::-----------------------------------------------------------------------------
+::                         is_uninstall_needed
+::-----------------------------------------------------------------------------
+:is_uninstall_needed
+
+  set "uninstall_needed="
+
+  @REM  uninstall is needed ONLY if:
+  @REM
+  @REM    *  uninstall specified
+
+  if defined uninstall (
+    set "uninstall_needed=1"
+  )
+
+  %return%
 
 ::-----------------------------------------------------------------------------
 ::                               BEGIN
@@ -772,28 +1039,28 @@
 
   if defined bldall (
 
-    call :do_build "32" "Debug"   "%instdir%"
-    call :do_build "32" "Release" "%instdir%"
-    call :do_build "64" "Debug"   "%instdir%"
-    call :do_build "64" "Release" "%instdir%"
+    call :do_build "32" "Debug"
+    call :do_build "32" "Release"
+    call :do_build "64" "Debug"
+    call :do_build "64" "Release"
 
   ) else (
 
     if /i "%arch%" == "BOTH" (
 
-      call :do_build "32" "%config%" "%instdir%"
-      call :do_build "64" "%config%" "%instdir%"
+      call :do_build "32" "%config%"
+      call :do_build "64" "%config%"
 
     ) else (
 
       if /i "%config%" == "BOTH" (
 
-        call :do_build "%arch%" "Debug"   "%instdir%"
-        call :do_build "%arch%" "Release" "%instdir%"
+        call :do_build "%arch%" "Debug"
+        call :do_build "%arch%" "Release"
 
       ) else (
 
-        call :do_build "%arch%" "%config%" "%instdir%"
+        call :do_build "%arch%" "%config%"
       )
     )
   )
@@ -807,74 +1074,119 @@
 
   setlocal
 
+    ::  PROGRAMMING NOTE: Because we did a setlocal, we must remember
+    ::  to never use %return% without first doing endlocal beforehand!
+
     set "arch=%~1"
     set "config=%~2"
-    set "instdir=%~3"
 
-    set "blddir=%pkgname%%arch%.%config%"
-    set "cachefile=%blddir%\CMakeCache.txt"
-    set "did_vstools="
-    set "rc=0"
+    set "rc=0"                    &&  @REM  (always!)
+    set "did_vstools="            &&  @REM  (to support skipping steps)
+
+    ::  Determine which steps are needed for this arch/config combination...
+
+    call :is_configure_needed     &&  @REM  (skip configure if possible)
+    call :is_make_needed          &&  @REM  (skip make      if possible)
+    call :is_install_needed       &&  @REM  (skip install   if possible)
+    call :is_uninstall_needed     &&  @REM  (skip uninstall if possible)
 
     echo cmdline = %nx0_cmdline%
     echo.
     echo Build of %arch%-bit %config% version of %pkgname% begun on %date% at %time: =0%
 
-    ::  Create build directory
+    %TRACE%.
+    %TRACE% Debug: values for this arch/config build:
+    %TRACE%.
+    %TRACE% prev_instdir     = "%prev_instdir%"
+    %TRACE% configure_needed = "%configure_needed%"
+    %TRACE% make_needed      = "%make_needed%"
+    %TRACE% install_needed   = "%install_needed%"
+    %TRACE% uninstall_needed = "%uninstall_needed%"
+    %TRACE%.
 
-    if defined rebuild (
-      if exist "%blddir%" (
-        rmdir /s /q "%blddir%"
+    ::  If they didn't specify an install or uninstall directory,
+    ::  use the same value as previously configured, if possible.
+    ::
+    ::  If there is no previously configured directory then leave
+    ::  the specified value undefined so the configure step knows
+    ::  to use the CMake default instead.
+
+    if defined install (
+      if not defined rebuild (
+        if not defined instdir (
+          if defined prev_instdir (
+            set "instdir=%prev_instdir%"
+          )
+        )
       )
     )
 
-    if not exist "%blddir%" (
-      mkdir      "%blddir%"
-      set "do_cmake=1"
-    ) else (
-      if not exist  "%blddir%\Makefile" (
-        rmdir /s /q "%blddir%"
-        mkdir       "%blddir%"
-        set "do_cmake=1"
-      ) else (
-        set "do_cmake="   &&    @REM cmake has already been done
+    if defined uninstall (
+      if not defined force (
+        if not defined uinstdir (
+          if defined prev_instdir (
+            set "uinstdir=%prev_instdir%"
+          )
+        )
       )
+    )
+
+    if defined uninstall (
+      set "instdir=%uinstdir%"
     )
 
     ::  Check to make sure their instdir value matches the previously
-    ::  configured value. (They can't specify one instdir on one run
-    ::  and then later try specifying a completely different one!)
+    ::  configured directory if such exists.  They cannot specify one
+    ::  directory on one run and then a completely different directory
+    ::  on a subsequent run.  For uninstalls the instdir value was set
+    ::  to their specified uinstdir just above so the below checks for
+    ::  both uninstalls and installs too.
 
-    if defined def_instdir (    @REM Default instdir being used
-      %skip%
+    if not defined configure_needed (
+      if defined instdir (
+        if defined prev_instdir (
+          if /i not "%instdir%" == "%prev_instdir%" (
+            if defined install (
+              goto :do_build_install_dir_error
+            )
+            if defined uninstall (
+              goto :do_build_uninstall_dir_error
+            )
+          )
+        )
+      )
     )
-    if defined do_cmake (       @REM CMake configure will be done
-      %skip%
-    )
 
-    ::  Specific instdir specified AND cmake NOT being done.
+    goto :do_build_build
 
-    call :get_cache_value "%cachefile%" "CMAKE_INSTALL_PREFIX"
+:do_build_install_dir_error
 
-    if /i not "%instdir%" == "%cache_value%" (
-      echo.
-      echo ERROR: Specified instdir does not match previously configured value. 1>&2
-      call :setrc1
-      echo        Use --rebuild to reconfigure if you wish to use a new value. 1>&2
-    )
+    call :errmsg Specified instdir does not match previously configured value.
+    call :errmsg Use --rebuild to reconfigure if you wish to use a new value.
+    goto :do_build_ret
 
-:skip
+:do_build_uninstall_dir_error
+
+    call :errmsg Specified uinstdir does not match previously used instdir.
+    call :errmsg Use --force option to uninstall from the specified uinstdir.
+    goto :do_build_ret
+
+:do_build_build
 
     ::  Do the build...
 
     pushd "%blddir%"
 
-      if %rc% EQU 0 call :do_cmakefile
-      if %rc% EQU 0 call :do_nmake
+      if %rc% EQU 0 call :do_configure
+      if %rc% EQU 0 call :do_make
       if %rc% EQU 0 call :do_install
-      if %rc% EQU 0 call :do_UNinstall
+      if %rc% EQU 0 call :do_uninstall
 
     popd
+
+    goto :do_build_ret
+
+:do_build_ret
 
     ::  Display results
 
@@ -889,11 +1201,11 @@
   %return%
 
 ::-----------------------------------------------------------------------------
-::                            do_cmakefile
+::                            do_configure
 ::-----------------------------------------------------------------------------
-:do_cmakefile
+:do_configure
 
-  if not defined do_cmake %return%
+  if not defined configure_needed %return%
 
   echo.&& echo Configuring %pkgname%%arch%.%config% ...&& echo.
 
@@ -902,17 +1214,10 @@
     set "did_vstools=1"
   )
 
-  ::  If 'def_instdir' is still defined, then it means we should use the
-  ::  CMake default installation directory (determine by our CMake script).
-  ::  Otherwise if 'def_instdir' is undefined, it means we DON'T want to
-  ::  use the CMake default but rather their specific directory instead.
-
-  if defined def_instdir (
-    @REM def_instdir is still defined; use the CMake script's default.
-    set "install_prefix_opt="
-  ) else (
-    @REM def_instdir is UNDEFINED; use whatever directory they specified.
+  if defined instdir (
     set "install_prefix_opt=-D INSTALL_PREFIX="%instdir%""
+  ) else (
+    set "install_prefix_opt="
   )
 
   :: PROGRAMMING NOTE: CMake apparently uses the 'RC' environment variable
@@ -923,21 +1228,23 @@
 
   set "rc="     &&    @REM (allows cmake to find rc.exe)
 
-  cmake -G "NMake Makefiles" %install_prefix_opt% "%pkgdir%"
+  cmake -G "NMake Makefiles"  %install_prefix_opt%  "%pkgdir%"
 
   set "rc=%errorlevel%"
   call :update_maxrc
 
-  if %rc% NEQ 0 (echo.&& echo ERROR: CMake has failed! rc=%rc%)
+  if %rc% NEQ 0 (
+    call :errmsg CMake has failed! rc=%rc%
+  )
 
   %return%
 
 ::-----------------------------------------------------------------------------
-::                            do_nmake
+::                            do_make
 ::-----------------------------------------------------------------------------
-:do_nmake
+:do_make
 
-  ::  We always do a make each time in case anything changed
+  if not defined make_needed %return%
 
   echo.&& echo Building %pkgname%%arch%.%config% ...&& echo.
 
@@ -951,7 +1258,9 @@
   set "rc=%errorlevel%"
   call :update_maxrc
 
-  if %rc% NEQ 0 (echo.&& echo ERROR: nmake has failed! rc=%rc%)
+  if %rc% NEQ 0 (
+    call :errmsg nmake has failed! rc=%rc%
+  )
 
   %return%
 
@@ -960,7 +1269,7 @@
 ::-----------------------------------------------------------------------------
 :do_install
 
-  if not defined install %return%
+  if not defined install_needed %return%
 
   echo.&& echo Installing %pkgname%%arch%.%config% ...&& echo.
 
@@ -974,16 +1283,18 @@
   set "rc=%errorlevel%"
   call :update_maxrc
 
-  if %rc% NEQ 0 (echo.&& echo ERROR: nmake install has failed! rc=%rc%)
+  if %rc% NEQ 0 (
+    call :errmsg nmake install has failed! rc=%rc%
+  )
 
   %return%
 
 ::-----------------------------------------------------------------------------
-::                            do_UNinstall
+::                            do_uninstall
 ::-----------------------------------------------------------------------------
-:do_UNinstall
+:do_uninstall
 
-  if not defined uninstall %return%
+  if not defined uninstall_needed %return%
 
   echo.&& echo UNinstalling %pkgname%%arch%.%config% ...&& echo.
 
@@ -997,8 +1308,25 @@
   set "rc=%errorlevel%"
   call :update_maxrc
 
-  if %rc% NEQ 0 (echo.&& echo ERROR: nmake uninstall has failed! rc=%rc%)
+  if %rc% NEQ 0 (
+    call :errmsg nmake uninstall has failed! rc=%rc%
+  )
 
+  %return%
+
+::-----------------------------------------------------------------------------
+::                              errmsg
+::-----------------------------------------------------------------------------
+:errmsg
+
+  :: PROGRAMMING NOTE: the only reason for the below unusual error message
+  :: format is so Visual Studio IDE detects it as a build error since just
+  :: exiting with a non-zero return code doesn't do the trick. Visual Studio
+  :: apparently examines the message-text looking for error/warning strings.
+
+  echo.                               1>&2
+  echo %~nx0^(1^) : error C9999 : %*  1>&2
+  call :setrc1
   %return%
 
 ::-----------------------------------------------------------------------------
