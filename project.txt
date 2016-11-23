@@ -1,0 +1,11 @@
+#------------------------------------------------------------------------------
+#   Define the project
+#------------------------------------------------------------------------------
+
+project( decNumber VERSION 3.6.8 )
+
+set( PROJECT_DESCRIPTION
+     "ANSI C General Decimal Arithmetic Library"
+     CACHE PATH "Project description" FORCE )
+
+#------------------------------------------------------------------------------

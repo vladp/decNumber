@@ -45,11 +45,7 @@ endif( NOT TRAVIS )
 #   Define the project
 #------------------------------------------------------------------------------
 
-project( decNumber VERSION 3.6.8 )
-
-set( PROJECT_DESCRIPTION
-     "ANSI C General Decimal Arithmetic Library"
-     CACHE PATH "Project description" FORCE )
+include( project.txt )
 
 
 #------------------------------------------------------------------------------
@@ -68,48 +64,14 @@ endif()
 #   Construct a list of this project's public headers
 #------------------------------------------------------------------------------
 
-#  PROGRAMMING NOTE: do NOT use GLOB to collect a list of source files from
-#  your source tree because, if no "CMakeLists.txt" file changes when a file
-#  is added or removed from your project, then the previously generated build
-#  system will never know to ask CMake to regenerate itself to reflect the
-#  newly added/removed files(s).
-
-set( PUBLIC_HEADERS
-
-    include/decimal128.h
-    include/decimal32.h
-    include/decimal64.h
-    include/decPacked.h
-    include/decNumber.h
-    include/decContext.h
-    include/decQuad.h
-)
-list( SORT PUBLIC_HEADERS )
+include( headers.txt )
 
 
 #------------------------------------------------------------------------------
 #   Construct a list of this project's source files
 #------------------------------------------------------------------------------
 
-#  PROGRAMMING NOTE: do NOT use GLOB to collect a list of source files from
-#  your source tree because, if no "CMakeLists.txt" file changes when a file
-#  is added or removed from your project, then the previously generated build
-#  system will never know to ask CMake to regenerate itself to reflect the
-#  newly added/removed files(s).
-
-set( ${PROJECT_NAME}_SRCS
-
-     source/decContext.c
-     source/decDouble.c
-     source/decNumber.c
-     source/decPacked.c
-     source/decQuad.c
-     source/decSingle.c
-     source/decimal128.c
-     source/decimal32.c
-     source/decimal64.c
-)
-list( SORT ${PROJECT_NAME}_SRCS )
+include( sources.txt )
 
 
 #------------------------------------------------------------------------------
@@ -139,25 +101,14 @@ endif()
 #   Update the INCLUDE directories search order
 #------------------------------------------------------------------------------
 
-include_directories( BEFORE ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}/include )
+include( includes.txt )
 
 
 #------------------------------------------------------------------------------
 #   Adjust needed compile flags for this project/package
 #------------------------------------------------------------------------------
 
-if( IS_BIG_ENDIAN )
-  set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=0" )
-else()
-  set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=1" )
-endif()
-set(   PKG_C_FLAGS "${PKG_C_FLAGS} -D DECPRINT=0"  )
-
-set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          ${PKG_C_FLAGS}" )
-set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${PKG_C_FLAGS}" )
-
-set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -D HAVE_PLATFORM_H -D DEBUG" )
-set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -D HAVE_PLATFORM_H" )
+include( cflags.txt )
 
 
 #------------------------------------------------------------------------------
@@ -168,11 +119,11 @@ if( WIN32 )
   # (the toolchain being used (i.e. vstools.cmd 32/64) defines this on Windows)
 else()
   if( BITNESS STREQUAL "32" )
-    set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -m32 -fPIC" )
-    set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -m32 -fPIC" )
+    set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -m32" )
+    set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -m32" )
   else()
-    set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -m64 -fPIC" )
-    set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -m64 -fPIC" )
+    set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -m64" )
+    set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -m64" )
   endif()
 endif()
 
@@ -189,9 +140,10 @@ if( SHARED_LIBRARY )
     add_library( ${FULLNAME}  SHARED  ${${PROJECT_NAME}_SRCS} )
 
     set_target_properties( ${FULLNAME} PROPERTIES
-                           PUBLIC_HEADER        "${PUBLIC_HEADERS}"
-                           OUTPUT_NAME           ${FULLNAME}
-                           PDB_NAME              ${FULLNAME} )
+                           POSITION_INDEPENDENT_CODE  TRUE
+                           PUBLIC_HEADER              "${PUBLIC_HEADERS}"
+                           OUTPUT_NAME                ${FULLNAME}
+                           PDB_NAME                   ${FULLNAME} )
 
     install( TARGETS ${FULLNAME}
              PUBLIC_HEADER DESTINATION include
@@ -202,9 +154,10 @@ else()
     add_library( ${FULLNAME}  STATIC  ${${PROJECT_NAME}_SRCS} )
 
     set_target_properties( ${FULLNAME} PROPERTIES
-                           PUBLIC_HEADER                "${PUBLIC_HEADERS}"
-                           OUTPUT_NAME                   ${FULLNAME}
-                           COMPILE_PDB_NAME              ${FULLNAME} )
+                           POSITION_INDEPENDENT_CODE  TRUE
+                           PUBLIC_HEADER              "${PUBLIC_HEADERS}"
+                           OUTPUT_NAME                 ${FULLNAME}
+                           COMPILE_PDB_NAME            ${FULLNAME} )
 
     install( TARGETS ${FULLNAME}
              PUBLIC_HEADER DESTINATION include
@@ -217,28 +170,22 @@ endif()
 #   Define additional files to be installed
 #------------------------------------------------------------------------------
 
-install( FILES "ICU-license.html" DESTINATION . )
-install( FILES "decnumber.pdf"    DESTINATION . )
-install( FILES "readme.txt"       DESTINATION . )
-install( FILES "ERRATA"           DESTINATION . )
-if( WIN32 )
-install( FILES "${CMAKE_BINARY_DIR}/${FULLNAME}.pdb" DESTINATION lib )
-endif()
+include( extra.txt )
 
 
 #------------------------------------------------------------------------------
 #   Generate the .pc package configuration file
 #------------------------------------------------------------------------------
 
-if( NOT EXISTS ${CMAKE_SOURCE_DIR}/${CMAKE_PROJECT_NAME}.pc.in )
-    message( AUTHOR_WARNING "Will not install ${CMAKE_PROJECT_NAME}.pc" )
+if( NOT EXISTS ${CMAKE_SOURCE_DIR}/package.pc.in )
+    message( AUTHOR_WARNING "Will not install package.pc.in" )
 else()
 
     set( PACKAGE_NAME        "${FULLNAME}" )
     set( PACKAGE_DESCRIPTION "${PROJECT_DESCRIPTION} (${BITNESS}-bit ${CONFIG})" )
     set( PACKAGE_VERSION     "${PROJECT_VERSION}"  )
 
-    configure_file( ${CMAKE_SOURCE_DIR}/${CMAKE_PROJECT_NAME}.pc.in
+    configure_file( ${CMAKE_SOURCE_DIR}/package.pc.in
                     ${CMAKE_BINARY_DIR}/${FULLNAME}.pc @ONLY )
 
     install( FILES  ${CMAKE_BINARY_DIR}/${FULLNAME}.pc
@@ -250,25 +197,7 @@ endif()
 #   The CPack installers
 #------------------------------------------------------------------------------
 
-if( SHARED_LIBRARY )
-    include( InstallRequiredSystemLibraries )
-endif()
-
-set( CPACK_PACKAGE_NAME                "${CMAKE_PROJECT_NAME}"  )
-set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}" )
-set( CPACK_PACKAGE_VERSION_MAJOR       "${CMAKE_VERSION_MAJOR}" )
-set( CPACK_PACKAGE_VERSION_MINOR       "${CMAKE_VERSION_MINOR}" )
-set( CPACK_PACKAGE_VERSION_PATCH       "${CMAKE_VERSION_PATCH}" )
-set( CPACK_PACKAGE_DESCRIPTION_FILE    "${CMAKE_CURRENT_SOURCE_DIR}/readme.txt" )
-set( CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_CURRENT_SOURCE_DIR}/ICU-license.html" )
-
-if( WIN32 )
-    set( CPACK_GENERATOR "ZIP" )
-else()
-    set( CPACK_GENERATOR "TGZ" )
-endif()
-
-include( CPack )
+include( cpack.txt )
 
 
 #------------------------------------------------------------------------------

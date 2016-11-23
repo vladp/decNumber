@@ -26,11 +26,11 @@
 
   #include <windows.h>                  /* Primary Windows header    */
 
-  /* Other system includes would go here...                          */
+  /* Other Windows system includes would go here...                  */
 
 #else /* non-Windows                                                 */
 
-  /* Other system includes would go here...                          */
+  /* Other non-Windows system includes would go here...              */
 
 #endif /* Windows or not                                             */
 
@@ -44,24 +44,27 @@
 #ifdef HAVE_STDBOOL_H
   #include <stdbool.h>
 #else
-  /* minimum stdbool.h #defines needed by decNumber */ 
-  #define bool    _Bool
-  #define false   0
-  #define true    1
-  #define __bool_true_false_are_defined   1
+  /* minimum stdbool.h #defines needed by package */ 
+  #define bool                          _Bool
+  #define _Bool                         int
+  #define false                         0
+  #define true                          1
+  #define __bool_true_false_are_defined 1
 #endif
+
 #ifdef HAVE_STDINT_H
   #include <stdint.h>
 #else
-  /* minimum stdint.h typedefs needed by decNumber */ 
-  typedef unsigned char  uint8_t; 
-  typedef          char   int8_t; 
-  typedef unsigned short uint16_t; 
-  typedef          short  int16_t; 
-  typedef unsigned int   uint32_t; 
-  typedef          int    int32_t; 
-  typedef unsigned long long uint64_t; 
-  typedef          long long int64_t; 
+  /* minimum stdint.h typedefs needed by package */ 
+  typedef char                          int8_t; 
+  typedef short                         int16_t; 
+  typedef int                           int32_t; 
+  typedef long long                     int64_t; 
+
+  typedef unsigned char                 uint8_t; 
+  typedef unsigned short                uint16_t; 
+  typedef unsigned int                  uint32_t; 
+  typedef unsigned long long            uint64_t; 
 #endif
 
-#endif /* #ifndef IN_PLATFORM_H */
+#endif /* IN_PLATFORM_H */

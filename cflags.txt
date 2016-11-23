@@ -1,0 +1,20 @@
+#------------------------------------------------------------------------------
+#   Adjust needed compile flags for this project/package
+#------------------------------------------------------------------------------
+
+if( IS_BIG_ENDIAN )
+  set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=0" )
+else()
+  set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=1" )
+endif()
+set(   PKG_C_FLAGS "${PKG_C_FLAGS} -D DECPRINT=0"  )
+
+#------------------------------------------------------------------------------
+
+set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          ${PKG_C_FLAGS}" )
+set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} ${PKG_C_FLAGS}" )
+
+set( CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}          -D HAVE_PLATFORM_H -D DEBUG" )
+set( CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -D HAVE_PLATFORM_H" )
+
+#------------------------------------------------------------------------------
