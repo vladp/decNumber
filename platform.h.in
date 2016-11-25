@@ -2,8 +2,8 @@
 /*  platform.h  --  primary build header. Should be first #include.  */
 /*-------------------------------------------------------------------*/
 
-#ifndef IN_PLATFORM_H
-#define IN_PLATFORM_H
+#ifndef _PLATFORM_H_
+#define _PLATFORM_H_
 
 /*-------------------------------------------------------------------*/
 /*  Include primary system headers according to build platform.      */
@@ -13,10 +13,9 @@
 
   #define _CRT_SECURE_NO_WARNINGS       /* We know what we're doing! */
 
-  #define _WIN32_WINNT      0x0600      /* Windows Vista/Server 2008 */
-  #define WINVER            0x0600      /* Windows Vista/Server 2008 */
-  #define NTDDI_VERSION     0x06000100  /* Vista SP1 / Server 2008   */
-  #define _WIN32_IE         0x0900      /* Internet Explorer 9.0     */
+  #define _WIN32_WINNT   0x0601         /* Windows 7 Service Pack 1  */
+  #define WINVER         _WIN32_WINNT   /* Windows 7 Service Pack 1  */
+  #define _WIN32_IE      0x0800         /* Internet Explorer 8.0     */
 
   /* Need <SDKDDKVer.h> header with later versions of Visual Studio. */
 
@@ -45,11 +44,11 @@
   #include <stdbool.h>
 #else
   /* minimum stdbool.h #defines needed by package */ 
-  #define bool                          _Bool
-  #define _Bool                         int
   #define false                         0
   #define true                          1
   #define __bool_true_false_are_defined 1
+  #define _Bool                         int
+  #define bool                          _Bool
 #endif
 
 #ifdef HAVE_STDINT_H
@@ -65,6 +64,31 @@
   typedef unsigned short                uint16_t; 
   typedef unsigned int                  uint32_t; 
   typedef unsigned long long            uint64_t; 
+
+  typedef char                          int_fast8_t;
+  typedef int                           int_fast16_t;
+  typedef int                           int_fast32_t;
+  typedef long long                     int_fast64_t;
+
+  typedef unsigned char                 uint_least8_t;
+  typedef unsigned char                 uint_fast8_t;
+  typedef unsigned int                  uint_fast16_t;
+  typedef unsigned int                  uint_fast32_t;
+  typedef unsigned long long            uint_fast64_t;
+
+  #define INT32_MAX                     0x7fffffff
+  #define UINT32_MAX                    0xffffffff
+  #define INT64_MAX                     0x7fffffffffffffff
+  #define UINT64_MAX                    0xffffffffffffffffU
+
+  #define INT32_C(x)                    ((x) + (INT32_MAX - INT32_MAX))
+  #define INT64_C(x)                    ((x) + (INT64_MAX - INT64_MAX))
+  #define UINT32_C(x)                   ((x) + (UINT32_MAX - UINT32_MAX))
+  #define UINT64_C(x)                   ((x) + (UINT64_MAX - UINT64_MAX))
+
+  /* Indicate #include <stdint.h> is now NOT needed by package */
+  #define int32_t                       int32_t
+
 #endif
 
-#endif /* IN_PLATFORM_H */
+#endif /* _PLATFORM_H_ */
