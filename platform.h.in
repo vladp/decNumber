@@ -11,8 +11,6 @@
 
 #ifdef _MSC_VER                         /* Microsoft Visual C/C++    */
 
-  #define _CRT_SECURE_NO_WARNINGS       /* We know what we're doing! */
-
   #define _WIN32_WINNT   0x0601         /* Windows 7 Service Pack 1  */
   #define WINVER         _WIN32_WINNT   /* Windows 7 Service Pack 1  */
   #define _WIN32_IE      0x0800         /* Internet Explorer 8.0     */

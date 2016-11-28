@@ -2,12 +2,19 @@
 #   Adjust needed compile flags for this project/package
 #------------------------------------------------------------------------------
 
+if( WIN32 )
+  set( PKG_C_FLAGS "${PKG_C_FLAGS} -D _CRT_SECURE_NO_WARNINGS" )
+endif()
+
+#------------------------------------------------------------------------------
+
+set(   PKG_C_FLAGS "${PKG_C_FLAGS} -D DECPRINT=0"  )
+
 if( IS_BIG_ENDIAN )
   set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=0" )
 else()
   set( PKG_C_FLAGS "${PKG_C_FLAGS} -D DECLITEND=1" )
 endif()
-set(   PKG_C_FLAGS "${PKG_C_FLAGS} -D DECPRINT=0"  )
 
 #------------------------------------------------------------------------------
 
