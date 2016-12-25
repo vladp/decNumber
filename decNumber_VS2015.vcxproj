@@ -72,7 +72,7 @@
 "$(ProjectDir)build.cmd" --uninstall --arch 32 --config Debug --pkgname .</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;DEBUG;_MSVC_;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>$(ProjectDir)source\include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>..\$(ProjectName)\</OutDir>
@@ -86,7 +86,7 @@
 "$(ProjectDir)build.cmd" --uninstall --arch 64 --config Debug --pkgname .</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;DEBUG;_MSVC_;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>$(ProjectDir)source\include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>..\$(ProjectName)\</OutDir>
@@ -100,7 +100,7 @@
 "$(ProjectDir)build.cmd" --uninstall --arch 32 --config Release --pkgname .</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;_MSVC_;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>$(ProjectDir)source\include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\$(ProjectName)\</OutDir>
@@ -114,7 +114,7 @@
 "$(ProjectDir)build.cmd" --uninstall --arch 64 --config Release --pkgname .</NMakeCleanCommandLine>
     <NMakeOutput>$(OutDir)</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;_MSVC_;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath>$(ProjectDir)source\include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(ProjectDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <BuildLog>
