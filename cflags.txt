@@ -2,6 +2,10 @@
 #   Adjust needed compile flags for this project/package
 #------------------------------------------------------------------------------
 
+include( targetver.txt )      # Define minimum required Windows platform
+
+#------------------------------------------------------------------------------
+
 if( WIN32 )
   set( PKG_C_FLAGS "${PKG_C_FLAGS} -D _CRT_SECURE_NO_WARNINGS" )
 endif()
