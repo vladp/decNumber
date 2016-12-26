@@ -163,12 +163,6 @@
     <None Include="BUILDING">
       <Filter>Other Files\build</Filter>
     </None>
-    <None Include=".travis.yml">
-      <Filter>Other Files\build\cmake</Filter>
-    </None>
-    <None Include=".travis_build.sh">
-      <Filter>Other Files\build\cmake</Filter>
-    </None>
     <None Include="cmake_uninstall.cmake.in">
       <Filter>Other Files\build\cmake</Filter>
     </None>
@@ -185,6 +179,9 @@
       <Filter>Other Files\build\cmake\modules</Filter>
     </None>
     <None Include="cmake\modules\ConfigHandler.cmake">
+      <Filter>Other Files\build\cmake\modules</Filter>
+    </None>
+    <None Include="cmake\modules\cotire.cmake">
       <Filter>Other Files\build\cmake\modules</Filter>
     </None>
     <None Include="cmake\modules\GIT_Revision.cmake">

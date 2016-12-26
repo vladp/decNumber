@@ -285,14 +285,6 @@
 					Name="cmake"
 					>
 					<File
-						RelativePath=".travis.yml"
-						>
-					</File>
-					<File
-						RelativePath=".travis_build.sh"
-						>
-					</File>
-					<File
 						RelativePath="cmake_uninstall.cmake.in"
 						>
 					</File>
@@ -321,6 +313,10 @@
 						</File>
 						<File
 							RelativePath="cmake\modules\ConfigHandler.cmake"
+							>
+						</File>
+						<File
+							RelativePath=".\cmake\modules\cotire.cmake"
 							>
 						</File>
 						<File

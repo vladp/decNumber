@@ -1253,12 +1253,17 @@
     set "did_vstools=1"
   )
 
-  :: Do faster cotire unity build if possible
+  :: Do faster cotire unity or pch build if possible...
 
-  set "nmake_target="
-  @REM For reasons unknown cotire unity build doesn't work for decNumber
-  :: nmake /q %nmake_target% > NUL 2>&1
-  :: if %errorlevel% NEQ 2 set "nmake_target=all_unity"
+  :: For reasons unknown cotire unity builds don't work for decNumber
+  :: so instead we do just a simple 'all_pch' pre-compiled header build
+  :: which is almost as fast as an 'all_unity' build.
+
+  set "nmake_target=all_pch"
+  nmake /q %nmake_target% > NUL 2>&1
+  if %errorlevel% EQU 2 (
+    set "nmake_target="
+  )
 
   :: Now build the target
 
