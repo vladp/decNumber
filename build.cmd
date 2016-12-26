@@ -1256,7 +1256,6 @@
   :: Do faster cotire unity build if possible
 
   set "nmake_target="
-
   @REM For reasons unknown cotire unity build doesn't work for decNumber
   :: nmake /q %nmake_target% > NUL 2>&1
   :: if %errorlevel% NEQ 2 set "nmake_target=all_unity"
