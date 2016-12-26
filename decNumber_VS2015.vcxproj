@@ -194,6 +194,11 @@
     <None Include="platform.h.in" />
     <None Include="README.md" />
     <None Include="vstools.cmd" />
+    <None Include="decNumber_VS2008.sln" />
+    <None Include="decNumber_VS2008.vcproj" />
+    <None Include="decNumber_VS2015.sln" />
+    <None Include="decNumber_VS2015.vcxproj" />
+    <None Include="decNumber_VS2015.vcxproj.filters" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="cflags.txt" />
