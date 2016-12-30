@@ -308,10 +308,6 @@
 							>
 						</File>
 						<File
-							RelativePath="cmake\modules\ConfigHandler.cmake"
-							>
-						</File>
-						<File
 							RelativePath=".\cmake\modules\cotire.cmake"
 							>
 						</File>
@@ -320,15 +316,7 @@
 							>
 						</File>
 						<File
-							RelativePath="cmake\modules\HG_Revision.cmake"
-							>
-						</File>
-						<File
 							RelativePath="cmake\modules\ParseBinaryDir.cmake"
-							>
-						</File>
-						<File
-							RelativePath="cmake\modules\ParseOption.cmake"
 							>
 						</File>
 						<File
