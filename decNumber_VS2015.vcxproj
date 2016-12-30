@@ -189,7 +189,6 @@
     <None Include="decnumber.pdf" />
     <None Include="ERRATA" />
     <None Include="ICU-license.html" />
-    <None Include="package.pc.in" />
     <None Include="platform.h.in" />
     <None Include="README.md" />
     <None Include="vstools.cmd" />
@@ -202,7 +201,6 @@
   <ItemGroup>
     <Text Include="cflags.txt" />
     <Text Include="CMakeLists.txt" />
-    <Text Include="cpack.txt" />
     <Text Include="extra.txt" />
     <Text Include="headers.txt" />
     <Text Include="includes.txt" />

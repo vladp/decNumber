@@ -293,10 +293,6 @@
 						>
 					</File>
 					<File
-						RelativePath="package.pc.in"
-						>
-					</File>
-					<File
 						RelativePath="platform.h.in"
 						>
 					</File>
@@ -349,10 +345,6 @@
 						>
 						<File
 							RelativePath="cflags.txt"
-							>
-						</File>
-						<File
-							RelativePath="cpack.txt"
 							>
 						</File>
 						<File
