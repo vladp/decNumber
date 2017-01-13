@@ -154,6 +154,7 @@
     <ClCompile Include="source\decPacked.c" />
     <ClCompile Include="source\decQuad.c" />
     <ClCompile Include="source\decSingle.c" />
+    <ClCompile Include="decnumber_version.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\decBasic.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="include\decPacked.h" />
     <ClInclude Include="include\decQuad.h" />
     <ClInclude Include="include\decSingle.h" />
+    <ClInclude Include="decnumber_version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitattributes" />
@@ -182,6 +184,7 @@
     <None Include="cmake\modules\ParseBinaryDir.cmake" />
     <None Include="cmake\modules\Trace.cmake" />
     <None Include="cmake\modules\Vdump.cmake" />
+    <None Include="cmake\modules\Version.cmake" />
     <None Include="cmake_uninstall.cmake.in" />
     <None Include="decnumber.pdf" />
     <None Include="ERRATA" />

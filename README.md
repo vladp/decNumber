@@ -1,4 +1,6 @@
-# The decNumber C library
+# decNumber
+### ANSI C General Decimal Arithmetic Library
+#### version 3.68.0
 
 ## Overview
 

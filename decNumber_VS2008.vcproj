@@ -110,6 +110,14 @@
 		<Filter
 			Name="Source Files"
 			>
+			<File
+				RelativePath=".\decnumber_version.c"
+				>
+			</File>
+			<File
+				RelativePath=".\decnumber_version.h"
+				>
+			</File>
 			<Filter
 				Name="examples"
 				>
@@ -325,6 +333,10 @@
 						</File>
 						<File
 							RelativePath="cmake\modules\Vdump.cmake"
+							>
+						</File>
+						<File
+							RelativePath=".\cmake\modules\Version.cmake"
 							>
 						</File>
 					</Filter>

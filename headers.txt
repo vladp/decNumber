@@ -10,6 +10,8 @@
 
 set( PUBLIC_HEADERS
 
+    decnumber_version.h
+
     include/decimal128.h
     include/decimal32.h
     include/decimal64.h
