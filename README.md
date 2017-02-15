@@ -49,7 +49,7 @@ All trademarks and registered trademarks mentioned herein are the property of th
 
 -------------------------------------------------------------------------------
 
-# Building decnumber
+# Building decNumber
 
 ## Prerequsites
 
