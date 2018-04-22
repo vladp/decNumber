@@ -428,6 +428,22 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="VS2017"
+						>
+						<File
+							RelativePath=".\decNumber_VS2017.sln"
+							>
+						</File>
+						<File
+							RelativePath=".\decNumber_VS2017.vcxproj"
+							>
+						</File>
+						<File
+							RelativePath=".\decNumber_VS2017.vcxproj.filters"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
