@@ -270,15 +270,15 @@
 					>
 				</File>
 				<File
-					RelativePath="ERRATA"
+					RelativePath="decnumber.ERRATA"
 					>
 				</File>
 				<File
-					RelativePath="ICU-license.html"
+					RelativePath="decnumber.ICU-license.html"
 					>
 				</File>
 				<File
-					RelativePath="readme.txt"
+					RelativePath="decnumber.readme.txt"
 					>
 				</File>
 			</Filter>

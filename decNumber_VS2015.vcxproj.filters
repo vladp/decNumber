@@ -163,10 +163,10 @@
     <None Include="decnumber.pdf">
       <Filter>Other Files\doc</Filter>
     </None>
-    <None Include="ERRATA">
+    <None Include="decnumber.ERRATA">
       <Filter>Other Files\doc</Filter>
     </None>
-    <None Include="ICU-license.html">
+    <None Include="decnumber.ICU-license.html">
       <Filter>Other Files\doc</Filter>
     </None>
     <None Include="BUILDING">
@@ -237,7 +237,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="readme.txt">
+    <Text Include="decnumber.readme.txt">
       <Filter>Other Files\doc</Filter>
     </Text>
     <Text Include="CMakeLists.txt">

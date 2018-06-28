@@ -187,8 +187,8 @@
     <None Include="cmake\modules\Version.cmake" />
     <None Include="cmake_uninstall.cmake.in" />
     <None Include="decnumber.pdf" />
-    <None Include="ERRATA" />
-    <None Include="ICU-license.html" />
+    <None Include="decnumber.ERRATA" />
+    <None Include="decnumber.ICU-license.html" />
     <None Include="platform.h.in" />
     <None Include="README.md" />
     <None Include="vstools.cmd" />
@@ -208,7 +208,7 @@
     <Text Include="headers.txt" />
     <Text Include="includes.txt" />
     <Text Include="project.txt" />
-    <Text Include="readme.txt" />
+    <Text Include="decnumber.readme.txt" />
     <Text Include="sources.txt" />
     <Text Include="targetver.txt" />
   </ItemGroup>

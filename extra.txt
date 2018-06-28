@@ -2,10 +2,10 @@
 #   Define additional files to be installed
 #------------------------------------------------------------------------------
 
-install( FILES "ICU-license.html" DESTINATION . )
-install( FILES "decnumber.pdf"    DESTINATION . )
-install( FILES "readme.txt"       DESTINATION . )
-install( FILES "ERRATA"           DESTINATION . )
+install( FILES "decnumber.ICU-license.html" DESTINATION . )
+install( FILES "decnumber.pdf"              DESTINATION . )
+install( FILES "decnumber.readme.txt"       DESTINATION . )
+install( FILES "decnumber.ERRATA"           DESTINATION . )
 
 #------------------------------------------------------------------------------
 
