@@ -46,7 +46,7 @@ full path in the CC/CXX export commands.
 The decNumber project is hosted on GitHub at the following URL:
 
 
-    https://github.com/Fish-Git/decNumber-icu-368
+    https://github.com/sdl-hercules-390/decNumber
 
 
 You can either clone the git repository (recommended) or download the source
@@ -143,7 +143,7 @@ Then, from within that WORK directory, simply invoke the package's "build"
 script:
 
 
-  ..\decNumber-icu-368\build --pkgname . --all --install ..\hyperion\decNumber
+  ..\decNumber-repo\build --pkgname . --all --install ..\hyperion\decNumber
 
 
 This will build the package (within your WORK directory) and automatically
