@@ -43,6 +43,9 @@
     <Filter Include="Other Files\build\msvc\VS2017">
       <UniqueIdentifier>{EFA3B253-AEC0-47ce-8A62-829D86C8E4CD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Other Files\build\msvc\VS2019">
+      <UniqueIdentifier>{65A1171F-662A-41a5-A3E9-E2DDDA9F2173}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Other Files\build\scripts">
       <UniqueIdentifier>{6c0a460e-2b3d-4dd7-95af-21740377d267}</UniqueIdentifier>
     </Filter>
@@ -222,6 +225,15 @@
     </None>
     <None Include="decNumber_VS2017.vcxproj.filters">
       <Filter>Other Files\build\msvc\VS2017</Filter>
+    </None>
+    <None Include="decNumber_VS2019.sln">
+      <Filter>Other Files\build\msvc\VS2019</Filter>
+    </None>
+    <None Include="decNumber_VS2019.vcxproj">
+      <Filter>Other Files\build\msvc\VS2019</Filter>
+    </None>
+    <None Include="decNumber_VS2019.vcxproj.filters">
+      <Filter>Other Files\build\msvc\VS2019</Filter>
     </None>
     <None Include="build">
       <Filter>Other Files\build\scripts\Linux</Filter>

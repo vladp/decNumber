@@ -266,15 +266,15 @@
 				Name="doc"
 				>
 				<File
-					RelativePath="decnumber.pdf"
-					>
-				</File>
-				<File
 					RelativePath="decnumber.ERRATA"
 					>
 				</File>
 				<File
 					RelativePath="decnumber.ICU-license.html"
+					>
+				</File>
+				<File
+					RelativePath="decnumber.pdf"
 					>
 				</File>
 				<File
@@ -437,6 +437,22 @@
 						</File>
 						<File
 							RelativePath=".\decNumber_VS2017.vcxproj.filters"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="vs2019"
+						>
+						<File
+							RelativePath=".\decNumber_VS2019.sln"
+							>
+						</File>
+						<File
+							RelativePath=".\decNumber_VS2019.vcxproj"
+							>
+						</File>
+						<File
+							RelativePath=".\decNumber_VS2019.vcxproj.filters"
 							>
 						</File>
 					</Filter>
