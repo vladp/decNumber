@@ -61,7 +61,9 @@
     #else
       /* minimum stdint.h typedefs needed by decNumber */
       typedef unsigned char         uint8_t;
+#if _MSC_VER <= 1910
       typedef          char          int8_t;
+#endif
       typedef unsigned short       uint16_t;
       typedef          short        int16_t;
       typedef unsigned int         uint32_t;
